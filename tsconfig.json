@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
     "target": "ES2022",
     "module": "ESNext",
     "lib": ["ES2022"],
