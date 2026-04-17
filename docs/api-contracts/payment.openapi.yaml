@@ -1,0 +1,370 @@
+openapi: 3.1.0
+info:
+  title: Payment Service API
+  version: 1.0.0
+  description: Payment processing and transaction management
+
+servers:
+  - url: http://localhost:3006
+    description: Local development
+  - url: https://api.example.com/payments
+    description: Production
+
+tags:
+  - name: Payments
+    description: Payment queries
+  - name: Refunds
+    description: Refund operations
+  - name: Webhooks
+    description: Payment provider webhooks
+
+paths:
+  /{id}:
+    get:
+      tags:
+        - Payments
+      summary: Get payment details
+      operationId: getPayment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Payment retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - not order owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Payment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /order/{orderId}:
+    get:
+      tags:
+        - Payments
+      summary: Get payment for an order
+      operationId: getPaymentByOrder
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Payment retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - not order owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Payment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /refund/{id}:
+    post:
+      tags:
+        - Refunds
+      summary: Initiate refund for a payment (admin only)
+      operationId: refundPayment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amount
+              properties:
+                amount:
+                  type: number
+                  format: double
+                  minimum: 0.01
+                  description: Amount to refund (must be <= payment amount)
+                reason:
+                  type: string
+                  enum: [customer_request, order_cancelled, duplicate, fraud]
+                  default: customer_request
+      responses:
+        '201':
+          description: Refund initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundResponse'
+        '400':
+          description: Validation error (e.g., refund amount exceeds payment)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden (admin role required)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Payment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Payment cannot be refunded (not in success status)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /webhook/stripe:
+    post:
+      tags:
+        - Webhooks
+      summary: Stripe webhook endpoint
+      operationId: stripeWebhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                type:
+                  type: string
+                  enum: [charge.succeeded, charge.failed, charge.refunded]
+                data:
+                  type: object
+      responses:
+        '200':
+          description: Webhook processed
+        '400':
+          description: Invalid signature or payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    PaymentResponse:
+      type: object
+      required:
+        - id
+        - orderId
+        - amount
+        - currency
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          format: double
+          minimum: 0
+        currency:
+          type: string
+          enum: [USD, EUR, GBP, INR]
+        status:
+          type: string
+          enum: [pending, awaiting_method, succeeded, failed, refunded]
+          description: |
+            - pending: Payment intent created, awaiting client confirmation
+            - awaiting_method: Waiting for payment method
+            - succeeded: Payment processed successfully
+            - failed: Payment declined
+            - refunded: Payment refunded
+        providerIntentId:
+          type: string
+          description: External provider payment intent ID (e.g., Stripe pi_...)
+          nullable: true
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Transaction:
+      type: object
+      required:
+        - id
+        - type
+        - amount
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [charge, refund]
+        amount:
+          type: number
+          format: double
+        status:
+          type: string
+          enum: [succeeded, failed]
+        providerTransactionId:
+          type: string
+          nullable: true
+        providerResponse:
+          type: object
+          description: Raw response from payment provider (for debugging)
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    RefundResponse:
+      type: object
+      required:
+        - id
+        - paymentId
+        - amount
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        paymentId:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          format: double
+        status:
+          type: string
+          enum: [pending, succeeded, failed]
+        reason:
+          type: string
+          enum: [customer_request, order_cancelled, duplicate, fraud]
+        providerRefundId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          enum:
+            - PAYMENT_NOT_FOUND
+            - ORDER_NOT_FOUND
+            - INVALID_REFUND_AMOUNT
+            - PAYMENT_NOT_REFUNDABLE
+            - PROVIDER_ERROR
+            - INVALID_WEBHOOK_SIGNATURE
+          example: PAYMENT_NOT_FOUND
+        message:
+          type: string
+        details:
+          type: object
+          nullable: true
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

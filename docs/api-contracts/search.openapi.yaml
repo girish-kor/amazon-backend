@@ -1,0 +1,348 @@
+openapi: 3.1.0
+info:
+  title: Search Service API
+  version: 1.0.0
+  description: Full-text search and product discovery
+
+servers:
+  - url: http://localhost:3007
+    description: Local development
+  - url: https://api.example.com/search
+    description: Production
+
+tags:
+  - name: Search
+    description: Product search operations
+  - name: Autocomplete
+    description: Search suggestions and autocomplete
+
+paths:
+  /:
+    get:
+      tags:
+        - Search
+      summary: Full-text search products with filters
+      operationId: searchProducts
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+          description: Search query
+          example: laptop pro
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Category ID filter
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+            format: double
+            minimum: 0
+          description: Minimum price filter
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+            format: double
+            minimum: 0
+          description: Maximum price filter
+        - name: inStock
+          in: query
+          schema:
+            type: boolean
+          description: Filter for in-stock items only
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [relevance, price_asc, price_desc, newest, rating]
+            default: relevance
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Search results
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: public, max-age=60
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - results
+                  - pagination
+                  - facets
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SearchResult'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
+                  facets:
+                    $ref: '#/components/schemas/FacetsResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /suggest:
+    get:
+      tags:
+        - Autocomplete
+      summary: Get autocomplete suggestions
+      operationId: getSearchSuggestions
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+          description: Partial search query
+          example: lap
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 10
+      responses:
+        '200':
+          description: Suggestions retrieved
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: public, max-age=300
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - suggestions
+                properties:
+                  suggestions:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - text
+                        - weight
+                      properties:
+                        text:
+                          type: string
+                          example: laptop pro
+                        weight:
+                          type: integer
+                          description: Popularity weight (higher = more popular)
+                          example: 150
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /facets:
+    get:
+      tags:
+        - Search
+      summary: Get available filter facets for current search
+      operationId: getFacets
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+          description: Search query
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Category filter (to scope facets)
+      responses:
+        '200':
+          description: Facets retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FacetsResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    SearchResult:
+      type: object
+      required:
+        - productId
+        - name
+        - price
+        - category
+      properties:
+        productId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        price:
+          type: number
+          format: double
+          minimum: 0
+        currency:
+          type: string
+          enum: [USD, EUR, GBP, INR]
+        category:
+          type: string
+        inStock:
+          type: boolean
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+          nullable: true
+        highlights:
+          type: object
+          description: Highlighted search match snippets
+          additionalProperties:
+            type: string
+          example:
+            name: "<em>Laptop</em> Pro 15\""
+            description: "High-performance <em>laptop</em> with M2 chip"
+        attributes:
+          type: object
+          additionalProperties: true
+          nullable: true
+          description: Product-specific attributes (varies by product type)
+
+    FacetsResponse:
+      type: object
+      properties:
+        category:
+          type: array
+          items:
+            type: object
+            required:
+              - value
+              - count
+            properties:
+              value:
+                type: string
+              count:
+                type: integer
+        price:
+          type: array
+          items:
+            type: object
+            required:
+              - min
+              - max
+              - count
+            properties:
+              min:
+                type: number
+              max:
+                type: number
+              count:
+                type: integer
+        inStock:
+          type: array
+          items:
+            type: object
+            properties:
+              value:
+                type: boolean
+              count:
+                type: integer
+
+    PaginationMeta:
+      type: object
+      required:
+        - page
+        - limit
+        - total
+        - totalPages
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 245
+        totalPages:
+          type: integer
+          example: 13
+        hasNextPage:
+          type: boolean
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          enum:
+            - INVALID_SEARCH_QUERY
+            - SEARCH_SERVICE_UNAVAILABLE
+            - INVALID_FILTERS
+          example: INVALID_SEARCH_QUERY
+        message:
+          type: string
+          example: Search query must be at least 1 character
+        details:
+          type: object
+          nullable: true
