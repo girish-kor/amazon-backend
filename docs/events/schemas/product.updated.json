@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/product.updated.json",
+  "title": "Product Updated Event",
+  "description": "Emitted when a product is updated in the catalog",
+  "type": "object",
+  "required": [
+    "eventId",
+    "eventType",
+    "occurredAt",
+    "recordedAt",
+    "schemaVersion",
+    "correlationId",
+    "productId",
+    "changes"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "eventType": {
+      "type": "string",
+      "enum": ["product.updated"]
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "recordedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "correlationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "causationId": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "productId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "changes": {
+      "type": "object",
+      "description": "Fields that were changed",
+      "properties": {
+        "name": {"type": ["string", "null"]},
+        "description": {"type": ["string", "null"]},
+        "basePrice": {"type": ["number", "null"]},
+        "categoryId": {"type": ["string", "null"], "format": "uuid"},
+        "attributes": {"type": ["object", "null"]},
+        "images": {"type": ["array", "null"]},
+        "isActive": {"type": ["boolean", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "previousValues": {
+      "type": "object",
+      "description": "Previous values of changed fields (for audit)",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

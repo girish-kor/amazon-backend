@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/payment.succeeded.json",
+  "title": "Payment Succeeded Event",
+  "description": "Emitted when payment is successfully processed",
+  "type": "object",
+  "required": [
+    "eventId",
+    "eventType",
+    "occurredAt",
+    "recordedAt",
+    "schemaVersion",
+    "correlationId",
+    "orderId",
+    "paymentId",
+    "userId",
+    "amount",
+    "currency"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "eventType": {
+      "type": "string",
+      "enum": ["payment.succeeded"]
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "recordedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "correlationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "causationId": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "orderId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "paymentId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "userId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "amount": {
+      "type": "number",
+      "minimum": 0
+    },
+    "currency": {
+      "type": "string",
+      "enum": ["USD", "EUR", "GBP", "INR"]
+    },
+    "providerTransactionId": {
+      "type": "string",
+      "description": "External provider transaction ID"
+    },
+    "metadata": {
+      "type": "object",
+      "nullable": true
+    }
+  },
+  "additionalProperties": false
+}

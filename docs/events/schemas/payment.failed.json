@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/payment.failed.json",
+  "title": "Payment Failed Event",
+  "description": "Emitted when payment processing fails",
+  "type": "object",
+  "required": [
+    "eventId",
+    "eventType",
+    "occurredAt",
+    "recordedAt",
+    "schemaVersion",
+    "correlationId",
+    "orderId",
+    "paymentId",
+    "userId",
+    "amount",
+    "currency",
+    "failureCode",
+    "failureMessage"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "eventType": {
+      "type": "string",
+      "enum": ["payment.failed"]
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "recordedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "correlationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "causationId": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "orderId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "paymentId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "userId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "amount": {
+      "type": "number",
+      "minimum": 0
+    },
+    "currency": {
+      "type": "string",
+      "enum": ["USD", "EUR", "GBP", "INR"]
+    },
+    "failureCode": {
+      "type": "string",
+      "enum": ["insufficient_funds", "lost_card", "card_declined", "expired_card", "network_error", "provider_error"]
+    },
+    "failureMessage": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/user.registered.json",
+  "title": "User Registered Event",
+  "description": "Emitted when a new user completes registration",
+  "type": "object",
+  "required": [
+    "eventId",
+    "eventType",
+    "occurredAt",
+    "recordedAt",
+    "schemaVersion",
+    "correlationId",
+    "userId",
+    "email"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique event identifier"
+    },
+    "eventType": {
+      "type": "string",
+      "enum": ["user.registered"],
+      "description": "Event type"
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the event occurred (business time)"
+    },
+    "recordedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the event was recorded to Kafka"
+    },
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema version for this event"
+    },
+    "correlationId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Correlation ID for distributed tracing"
+    },
+    "causationId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the event that caused this event",
+      "nullable": true
+    },
+    "userId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "New user ID"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "User email address"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata",
+      "properties": {
+        "ipAddress": {
+          "type": "string"
+        },
+        "userAgent": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "enum": ["web", "mobile", "api"]
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
