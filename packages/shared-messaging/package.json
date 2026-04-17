@@ -1,0 +1,24 @@
+{
+  "name": "@ecommerce/shared-messaging",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Kafka producer/consumer and event handling",
+  "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ecommerce/shared-logger": "workspace:*",
+    "@ecommerce/shared-types": "workspace:*",
+    "kafkajs": "^2.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  }
+}

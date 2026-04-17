@@ -1,0 +1,22 @@
+{
+  "name": "@ecommerce/shared-logger",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Pino structured logger with OpenTelemetry",
+  "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "pino": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  }
+}

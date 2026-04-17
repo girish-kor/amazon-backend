@@ -1,0 +1,19 @@
+{
+  "name": "@ecommerce/shared-errors",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared error classes and handling",
+  "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  }
+}

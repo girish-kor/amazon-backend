@@ -1,0 +1,43 @@
+{
+  "name": "root",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["ES2022"],
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["packages/*/src"],
+      "@shared/types": ["packages/shared-types/src"],
+      "@shared/errors": ["packages/shared-errors/src"],
+      "@shared/logger": ["packages/shared-logger/src"],
+      "@shared/middleware": ["packages/shared-middleware/src"],
+      "@shared/messaging": ["packages/shared-messaging/src"],
+      "@shared/telemetry": ["packages/shared-telemetry/src"],
+      "@shared/http-client": ["packages/shared-http-client/src"],
+      "@shared/cache": ["packages/shared-cache/src"]
+    },
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "build", "coverage"]
+}

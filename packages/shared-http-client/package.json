@@ -1,0 +1,25 @@
+{
+  "name": "@ecommerce/shared-http-client",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "HTTP client with retry, circuit breaker, and tracing",
+  "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ecommerce/shared-logger": "workspace:*",
+    "@ecommerce/shared-types": "workspace:*",
+    "opossum": "^8.1.0",
+    "node-fetch": "^3.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  }
+}
